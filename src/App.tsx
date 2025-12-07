@@ -34,32 +34,43 @@ function reducer(state: CalcState, action: Action): CalcState {
       return { ...state, current: state.current + action.payload };
     case "CHOOSE_OPERATION":
       if (state.current === "" && action.payload !== "=") return state;
-      if (state.previous === null && action.payload === "=") {
+      if (
+        action.payload === "=" &&
+        (state.previous === null || state.operation === null)
+      ) {
         return state;
+      }
+
+      if (state.previous === null && action.payload !== "=") {
+        return {
+          previous: state.current,
+          current: "",
+          operation: action.payload,
+        };
       }
 
       const prev = Number(state.previous);
       const curr = Number(state.current || state.previous);
-      let result = prev;
+      let res: number = prev;
       switch (state.operation) {
         case "+":
-          result = prev + curr;
+          res = prev + curr;
           break;
         case "-":
-          result = prev - curr;
+          res = prev - curr;
           break;
         case "*":
-          result = prev * curr;
+          res = prev * curr;
           break;
         case "/":
-          result = curr === 0 ? prev : prev / curr;
+          res = curr === 0 ? prev : prev / curr;
           break;
       }
 
       if (action.payload === "=") {
         return {
           ...state,
-          current: String(result),
+          current: String(res),
           previous: null,
           operation: null,
         };
@@ -67,7 +78,7 @@ function reducer(state: CalcState, action: Action): CalcState {
 
       return {
         ...state,
-        previous: String(result),
+        previous: String(res),
         operation: action.payload,
         current: "",
       };
